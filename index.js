@@ -116,8 +116,8 @@ Notifications.unregister = function() {
 /**
  * Local Notifications
  * @param {Object}		details
+ * @param {String}		details.title  -  The title displayed in the notification alert.
  * @param {String}		details.message - The message displayed in the notification alert.
- * @param {String}		details.title  -  ANDROID ONLY: The title displayed in the notification alert.
  * @param {String}		details.ticker -  ANDROID ONLY: The ticker displayed in the status bar.
  * @param {Object}		details.userInfo -  iOS ONLY: The userInfo used in the notification alert.
  */
@@ -163,7 +163,9 @@ Notifications.localNotificationSchedule = function(details: Object) {
 
 		const iosDetails = {
 			fireDate: details.date.toISOString(),
+			alertTitle: details.title,
 			alertBody: details.message,
+			category: details.category,
 			soundName: soundName,
 			userInfo: details.userInfo,
 			repeatInterval: details.repeatType
@@ -224,10 +226,12 @@ Notifications._onNotification = function(data, isFromBackground = null) {
 				alert: data.getAlert(),
 				sound: data.getSound(),
 				context: data,
+  			finish: (res) => data.finish(res)
 			});
 		} else {
 			var notificationData = {
 				foreground: ! isFromBackground,
+  			finish: () => {},
 				...data
 			};
 
@@ -273,6 +277,10 @@ Notifications.requestPermissions = function() {
 };
 
 /* Fallback functions */
+Notifications.subscribeToTopic = function() {
+	return this.callNative('subscribeToTopic', arguments);
+};
+
 Notifications.presentLocalNotification = function() {
 	return this.callNative('presentLocalNotification', arguments);
 };
@@ -283,6 +291,10 @@ Notifications.scheduleLocalNotification = function() {
 
 Notifications.cancelLocalNotifications = function() {
 	return this.callNative('cancelLocalNotifications', arguments);
+};
+
+Notifications.clearLocalNotification = function() {
+    return this.callNative('clearLocalNotification', arguments);
 };
 
 Notifications.cancelAllLocalNotifications = function() {
